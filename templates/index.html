@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vastu House Layout Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>🏡 Multi-Agent Vastu House Layout Generator</h1>
+            <p>An autonomous agent pipeline generating geometrically optimal, Vastu-compliant rectangular subdivisions inside custom plots.</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel: Input & Design -->
+            <div class="panel left-panel">
+                <div class="card">
+                    <h2>🖍️ Design Your Plot Boundary</h2>
+                    <p class="subtitle">Drag the vertices to edit your plot shape. Configure setbacks below to calculate the house footprint dynamically.</p>
+                    
+                    <div class="preset-controls">
+                        <select id="preset-select">
+                            <option value="l_shape">L-Shape Plot (Default)</option>
+                            <option value="rectangle">Simple Rectangle (80'x80')</option>
+                            <option value="t_shape">T-Shape Plot</option>
+                            <option value="blank">Custom (Blank)</option>
+                        </select>
+                        <button id="add-vertex-btn" class="btn secondary">Add Vertex</button>
+                    </div>
+
+                    <div class="setback-controls">
+                        <div class="setback-input">
+                            <label for="setback-vertical">Vertical Edge Setback (ft)</label>
+                            <input type="number" id="setback-vertical" value="5" min="0" max="50" step="1">
+                        </div>
+                        <div class="setback-input">
+                            <label for="setback-horizontal">Horizontal Edge Setback (ft)</label>
+                            <input type="number" id="setback-horizontal" value="15" min="0" max="50" step="1">
+                        </div>
+                    </div>
+
+                    <div class="sbc-controls">
+                        <label for="custom-sbc">Stage 1: Custom Building Code Constraints</label>
+                        <textarea id="custom-sbc" rows="5">1. West Setback: The West wall must have exactly a 0ft setback.
+2. Fire Safety Entry: Do not erode the section on the South edge between X=35 and X=75 (it must reach Y=0).
+3. Protected Tree: Do not build anything in the top-right corner where X is greater than 75 and Y is greater than 84.</textarea>
+                    </div>
+
+                    <div class="sbc-controls" style="margin-top: 15px;">
+                        <label for="custom-vastu">Stage 2 (Ground Floor): Room Configurations & Vastu Placement</label>
+                        <textarea id="custom-vastu" rows="10">Define variables for: "Living Area", "Kitchen", "Master Suite", "Guest Bedroom", "Home Office", "Main Bath", "Guest Bath", "Hallway", "Staircase"
+=== Minimum Room Sizes ===
+- Living Area: >= 20 x 20
+- Kitchen: >= 12 x 15
+- Master Suite: >= 16 x 16
+- Guest Bedroom: >= 12 x 12
+- Home Office: >= 10 x 10
+- Main Bath: >= 8 x 8
+- Guest Bath: >= 6 x 6
+- Hallway: width >= 5, height >= 5
+- Staircase: >= 10 x 12
+=== Vastu Constraints ===
+- Master Suite must be in the South-West corner (its center X must be strictly less than the Kitchen's center X).
+- Kitchen must be in the South-East.
+- Living Area must be in the North-East (its center Y must be strictly greater than Kitchen center Y).
+- Home Office must be strictly North of the Master Suite.
+- Staircase must be to the left of the entry (entry is from the South, so Staircase should be on the West side).</textarea>
+                    </div>
+
+                    <div class="sbc-controls" style="margin-top: 15px;">
+                        <label for="custom-vastu-stage3">Stage 3 (Upper Floor): Room Configurations & Vastu Placement</label>
+                        <textarea id="custom-vastu-stage3" rows="8">Define variables for: "Upper Hallway", "Primary Suite", "Primary Bath", "Bedroom 4", "Bedroom 5", "Shared Bath"
+=== Minimum Room Sizes ===
+- Upper Hallway: >= 5 x 5
+- Primary Suite: >= 16 x 16
+- Primary Bath: >= 10 x 10
+- Bedroom 4: >= 12 x 12
+- Bedroom 5: >= 12 x 12
+- Shared Bath: >= 8 x 8
+=== Vastu Constraints ===
+- Primary Suite must be directly above the Ground Floor Living Area (its center must align).
+- Shared Bath must be in the North-West corner.</textarea>
+                    </div>
+
+                    <div class="canvas-container">
+                        <canvas id="plot-canvas" width="500" height="400"></canvas>
+                        <div id="canvas-tooltip" class="tooltip hidden"></div>
+                    </div>
+
+                    <div id="validation-status" class="status-box">
+                        <span class="icon">✅</span> Valid boundary. Footprint Net Area: <strong id="net-area">3540</strong> sq ft.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Solver Output & Telemetry -->
+            <div class="panel right-panel">
+                <div class="card">
+                    <h2>🛠️ Solver Engine Console & Output</h2>
+                    <button id="generate-btn" class="btn primary">🚀 Generate Vastu House Layout</button>
+                    
+                    <div id="pipeline-status" class="pipeline-status hidden">
+                        <div class="spinner"></div>
+                        <span id="pipeline-status-text">Initializing Multi-Agent Pipeline...</span>
+                    </div>
+
+                    <div id="workflow-steps" class="workflow-steps">
+                        <!-- Step cards will be dynamically appended here via SSE -->
+                    </div>
+
+                    <div id="final-results" class="final-results hidden">
+                        <div class="celebration">🎉 Vastu Layout Generated Successfully! 🎉</div>
+                        <h3>📊 Output Layout Analytics</h3>
+                        <div class="metrics-grid">
+                            <div class="metric">
+                                <span class="label">Iterations</span>
+                                <span class="value" id="metric-iterations">1 / 5</span>
+                            </div>
+                            <div class="metric">
+                                <span class="label">Target Footprint</span>
+                                <span class="value" id="metric-target">3540 sqft</span>
+                            </div>
+                            <div class="metric">
+                                <span class="label">Z3 Solved Area</span>
+                                <span class="value" id="metric-solved">3540 sqft</span>
+                            </div>
+                            <div class="metric">
+                                <span class="label">Stage 1 Time</span>
+                                <span class="value" id="metric-time-stage1">0s</span>
+                            </div>
+                            <div class="metric">
+                                <span class="label">Stage 2 Time</span>
+                                <span class="value" id="metric-time-stage2">0s</span>
+                            </div>
+                        </div>
+
+                        <div id="final-plotly-chart" class="plotly-chart"></div>
+                        <h3 style="margin-top: 20px;">📊 2-Story Integrated Floor Plan</h3>
+
+                        <a id="download-dxf-btn" class="btn download" href="#" style="display: none;">📥 Download AutoCAD DXF Blueprint</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/canvas.js?v=4"></script>
+    <script src="/static/js/app_v5.js"></script>
+</body>
+</html>

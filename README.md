@@ -125,3 +125,11 @@ Executed for complex programming logic and code generation.
 ### Claude 3 Opus
 
 Deployed for high-level technical reasoning and architectural strategy questions.
+
+## Summary Checklist
+
+| Step               | If using WSL / Linux                      | If using Native Windows                                                                       |
+| ------------------ | ----------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **1. Setup**       | Run `python terminal_cmds.py` (Automated) | Install Node.js, run `pip install -r requirements.txt`, and run `claude setup-token` (Manual) |
+| **2. Credentials** | Save token to `.env`                      | Save token to `.env`                                                                          |
+| **3. Execution**   | Run `python llm_infer.py`                 | Run `python llm_infer.py`                                                                     |

@@ -1,76 +1,127 @@
-# Generate an Anthropic OAuth Token for Claude Pro/Max
+# Claude API Authentication & Inference Demo (2026)
 
-To generate an OAuth token (`sk-ant-oat01-...`) tied to your personal Claude Pro or Max subscription, you need to use Anthropic's official Claude Code command-line tool.
+This repository provides a streamlined setup for authenticating with Anthropic's Claude API using an **OAuth Token (`sk-ant-oat01-`)** derived from an active Claude.ai Pro or Max subscription. It includes script automation for Linux/WSL and clear manual steps for native Windows environments to handle system packages, node dependencies, and multi-model LLM inferences.
 
-This token is specifically designed for local scripts, CI pipelines, and personal automation running on your own machine.
+## Repository Structure
 
-## Step-by-Step Instructions
+As shown in the project workspace:
 
-### 1. Install the Claude Code CLI
+* `terminal_cmds.py`: Automated environment setup script (optimized for Linux/WSL).
+* `llm_infer.py`: Python script demonstrating inference calls to multiple Claude models.
+* `requirements.txt`: Python package dependencies.
+* `README.md`: Setup and execution guide.
 
-If you haven't already, install the official Claude Code CLI on your local machine.
+---
 
-You need Node.js installed first.
+## Getting Started
+
+### 1. Clone the Repository (Common Step) 
+
+Open your terminal (WSL, Bash, PowerShell, or CMD) based on which Operating System you are using and clone this repository:
 
 ```bash
+git clone <your-repository-url>
+cd <repository-folder-name>
+```
+
+## 2. Environment Setup & Authentication ( Option A or B ) 
+
+Choose the section below that matches your operating system.
+
+### Option A: Linux or Windows Subsystem for Linux (WSL)
+
+If you are using Linux or WSL, the setup is entirely automated. Run the script to install Node.js, Python packages, the Claude CLI, and launch the browser authentication:
+
+```bash
+python terminal_cmds.py
+```
+
+### Option B: Native Windows (PowerShell or CMD)
+
+Because native Windows uses different package managers, follow these quick manual steps.
+
+#### Install Node.js
+
+Download and install Node.js (v20+) from the official website:
+
+https://nodejs.org
+
+#### Install Python Dependencies
+
+```powershell
+pip install -r requirements.txt
+```
+
+#### Install the Claude Code CLI Globally
+
+```powershell
 npm install -g @anthropic-ai/claude-code
 ```
 
-### 2. Run the Setup Command
+#### Trigger the OAuth Flow
 
-Initiate the OAuth authentication flow by running:
-
-```bash
+```powershell
 claude setup-token
 ```
 
-### 3. Complete Browser Sign-In
+## 3. Complete the OAuth Authentication (All Platforms) (Common Step ) 
 
-The CLI will either:
+The terminal will trigger a browser window or generate an authentication link.
 
-* Open a browser window automatically, or
-* Provide a URL for you to open manually
-
-Sign in using the Anthropic account that has your active Claude Pro or Max subscription.
-
-### 4. Paste the Authorization Code
-
-After signing in, the browser will:
-
-* Display an authorization code, or
-* Redirect you to a URL containing the authorization information
-
-If prompted by the CLI, copy the code (or full redirect URL, depending on the prompt) and paste it back into your terminal.
-
-### 5. Copy Your OAuth Token
-
-After successful authentication, the CLI will output a token similar to:
+1. Sign in using the Claude.ai account tied to your Pro or Max subscription.
+2. Complete the authorization flow.
+3. Once authorized, the terminal will output your unique personal OAuth token beginning with:
 
 ```text
-sk-ant-oat01-XXXXXXXXXXXXXXXXXXXXXXXXXX
+sk-ant-oat01-...
 ```
 
-Copy the entire token string.
+## 4. Configure Your Environment Variables  (Common Step ) 
 
-## Using the Token Securely
+Create a file named `.env` in the root directory of this project.
 
-Store the token in a local environment variable rather than embedding it directly in code.
+### Linux / WSL
 
 ```bash
-# In your local .env file
-ANTHROPIC_API_KEY=sk-ant-oat01-your-token-here
+touch .env
 ```
 
-## Security Reminder
+### Windows (PowerShell)
 
-This token provides direct access to your personal Anthropic account.
+```powershell
+New-Item .env
+```
 
-Treat it like a password:
+Open the `.env` file in your preferred text editor and paste your token exactly like this:
 
-* Do not hardcode it into shared scripts.
-* Do not share it with teammates.
-* Do not commit it to Git repositories.
-* Do not expose it in public CI/CD logs.
-* Store it securely using environment variables or a secrets manager.
+```env
+ANTHROPIC_API_KEY=sk-ant-oat01-your-actual-oauth-token-here
+```
 
-**Final reminder:** This token is a direct pipeline to your personal account. Treat it like a password. Never commit it to a GitHub repository or share it publicly.
+> ⚠️ **Security Warning:** Never commit the `.env` file to version control. It contains access credentials to your personal subscription account.
+
+---
+
+# 5. Running Inference Calls  (Common Step ) 
+
+Once your `.env` file is configured, you can run the multi-model inference script to test the setup.
+
+The script sequentially routes targeted prompts across multiple Claude models.
+
+```bash
+python llm_infer.py
+```
+
+## Models Demonstrated
+
+### Claude 3.5 Haiku
+
+Utilized for lightweight data extraction and fast structural formatting (JSON).
+
+### Claude 3.5 Sonnet
+
+Executed for complex programming logic and code generation.
+
+### Claude 3 Opus
+
+Deployed for high-level technical reasoning and architectural strategy questions.

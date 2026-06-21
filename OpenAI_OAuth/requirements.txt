@@ -1,0 +1,2 @@
+# No external Python libraries required for the Codex CLI wrapper.
+# Requires Node.js and npm to be installed on the system.
